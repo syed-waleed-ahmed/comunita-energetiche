@@ -1,0 +1,12 @@
+// tsconfig for API app
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": "./",
+    "paths": {
+      "@ce/packages-core": "../../packages/core/src"
+    }
+  },
+  "include": ["src"]
+}

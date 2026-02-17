@@ -1,0 +1,8 @@
+// tsconfig for mastra package
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": ["src"]
+}

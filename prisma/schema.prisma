@@ -1,0 +1,104 @@
+// Initial Prisma schema for MVP domain model
+// Save as schema.prisma in prisma/
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Member {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  status       String
+  name         String?
+  surname      String?
+  fiscalCode   String?
+  vatNumber    String?
+  legalType    String? // PF/PG
+  subjectType  String? // AI/PI/AS/…
+  podCode      String?
+  documents    Document[]
+  validationIssues ValidationIssue[]
+  tracciatoRows TracciatoRow[]
+}
+
+model Document {
+  id           String   @id @default(uuid())
+  memberId     String
+  docType      String
+  storagePath  String
+  mimeType     String
+  uploadedAt   DateTime @default(now())
+  extractionStatus String
+  member       Member   @relation(fields: [memberId], references: [id])
+  extractionResults ExtractionResult[]
+}
+
+model ExtractionResult {
+  id           String   @id @default(uuid())
+  documentId   String
+  schemaName   String
+  json         Json
+  confidence   Float?
+  evidence     Json?
+  createdAt    DateTime @default(now())
+  document     Document @relation(fields: [documentId], references: [id])
+}
+
+model ValidationIssue {
+  id           String   @id @default(uuid())
+  memberId     String
+  severity     String
+  code         String
+  message      String
+  field        String?
+  source       String
+  createdAt    DateTime @default(now())
+  resolvedAt   DateTime?
+  member       Member   @relation(fields: [memberId], references: [id])
+}
+
+model TracciatoBatch {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  createdBy    String?
+  status       String
+  rowCount     Int
+  ruleVersion  String?
+  templateVersion String?
+  rows         TracciatoRow[]
+  fileArtifacts FileArtifact[]
+}
+
+model TracciatoRow {
+  id           String   @id @default(uuid())
+  batchId      String
+  memberId     String
+  podCode      String?
+  dataJson     Json
+  isValid      Boolean
+  errorsJson   Json?
+  batch        TracciatoBatch @relation(fields: [batchId], references: [id])
+  member       Member         @relation(fields: [memberId], references: [id])
+}
+
+model FileArtifact {
+  id           String   @id @default(uuid())
+  batchId      String
+  type         String
+  storagePath  String
+  createdAt    DateTime @default(now())
+  batch        TracciatoBatch @relation(fields: [batchId], references: [id])
+}
+
+model RequiredDocConfig {
+  id           String   @id @default(uuid())
+  docType      String
+  required     Boolean
+  createdAt    DateTime @default(now())
+}

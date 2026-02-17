@@ -1,0 +1,23 @@
+{
+  "name": "comunita-energetiche-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter @ce/apps-api dev",
+    "mastra": "pnpm --filter @ce/packages-mastra dev"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "json2csv": "6.0.0-alpha.2",
+    "prisma": "^5.22.0"
+  }
+}
