@@ -15,6 +15,17 @@ const MemberCreateSchema = z.object({
 });
 
 export async function memberRoutes(fastify: FastifyInstance) {
+    // Update member status
+    fastify.patch('/members/:id/status', {
+      preHandler: [apiKeyAuth],
+      handler: async (request, reply) => {
+        const { id } = request.params as { id: string };
+        const { status } = request.body as { status: string };
+        if (!status) return reply.code(400).send({ error: 'Missing status' });
+        const member = await prisma.member.update({ where: { id }, data: { status } });
+        reply.send(member);
+      },
+    });
   // Create member
   fastify.post('/members', {
     preHandler: [apiKeyAuth],
