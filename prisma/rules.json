@@ -1,23 +1,143 @@
 {
   "fields": [
-    { "name": "CodicePod", "required": true, "type": "string", "minLength": 14, "maxLength": 15 },
-    { "name": "Accumulostandalone", "required": false, "type": "string" },
-    { "name": "TipologiaGiuridica", "required": false, "type": "string", "enum": ["PF", "PG"] },
-    { "name": "FormaGiuridica", "required": false, "type": "string" },
-    { "name": "TipologiaSoggetto", "required": true, "type": "string", "enum": ["AI", "PI", "AS"] },
-    { "name": "SottotipologiaAmministrazioneLocaleISTAT", "required_if": { "field": "TipologiaSoggetto", "value": "AI" }, "type": "string" },
-    { "name": "SoggettoDotatoDiPartitaIVA", "required": false, "type": "boolean" },
-    { "name": "StudioAssociato/SocietàDiProfessionisti", "required": false, "type": "string" },
-    { "name": "Nome", "required_if": { "field": "TipologiaGiuridica", "value": "PF" }, "type": "string" },
-    { "name": "Cognome", "required_if": { "field": "TipologiaGiuridica", "value": "PF" }, "type": "string" },
-    { "name": "CodiceFiscale", "required": true, "type": "string", "pattern": "^[A-Z0-9]{16}$" },
-    { "name": "PartitaIVA", "required_if": { "field": "TipologiaGiuridica", "value": "PG" }, "type": "string", "pattern": "^[0-9]{11}$" },
-    { "name": "CodiceAteco", "required": false, "type": "string", "pattern": "^\\d{2}\\.\\d{2}\\.\\d{2}$" },
-    { "name": "RagioneSociale/NomeDitta", "required_if": { "field": "TipologiaGiuridica", "value": "PG" }, "type": "string" }
+    {
+      "name": "CodicePod",
+      "required": true,
+      "type": "string",
+      "minLength": 14,
+      "maxLength": 15
+    },
+    {
+      "name": "Accumulostandalone",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "name": "TipologiaGiuridica",
+      "required": false,
+      "type": "string",
+      "enum": [
+        "PF",
+        "PG"
+      ]
+    },
+    {
+      "name": "FormaGiuridica",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "name": "TipologiaSoggetto",
+      "required": true,
+      "type": "string",
+      "enum": [
+        "AI",
+        "PI",
+        "AS"
+      ]
+    },
+    {
+      "name": "SottotipologiaAmministrazioneLocaleISTAT",
+      "required_if": {
+        "field": "TipologiaSoggetto",
+        "value": "AI"
+      },
+      "type": "string"
+    },
+    {
+      "name": "SoggettoDotatoDiPartitaIVA",
+      "required": false,
+      "type": "boolean"
+    },
+    {
+      "name": "StudioAssociato/SocietàDiProfessionisti",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "name": "Nome",
+      "required_if": {
+        "field": "TipologiaGiuridica",
+        "value": "PF"
+      },
+      "type": "string"
+    },
+    {
+      "name": "Cognome",
+      "required_if": {
+        "field": "TipologiaGiuridica",
+        "value": "PF"
+      },
+      "type": "string"
+    },
+    {
+      "name": "CodiceFiscale",
+      "required": true,
+      "type": "string",
+      "pattern": "^[A-Z0-9]{16}$"
+    },
+    {
+      "name": "PartitaIVA",
+      "required_if": {
+        "field": "TipologiaGiuridica",
+        "value": "PG"
+      },
+      "type": "string",
+      "pattern": "^[0-9]{11}$"
+    },
+    {
+      "name": "CodiceAteco",
+      "required": false,
+      "type": "string",
+      "pattern": "^\\d{2}\\.\\d{2}\\.\\d{2}$"
+    },
+    {
+      "name": "RagioneSociale/NomeDitta",
+      "required_if": {
+        "field": "TipologiaGiuridica",
+        "value": "PG"
+      },
+      "type": "string"
+    },
+    {
+      "name": "CodiceGAUDI",
+      "required_if": {
+        "field": "memberType",
+        "value": "PRODUCER"
+      },
+      "type": "string"
+    },
+    {
+      "name": "PotenzaImpianto",
+      "required_if": {
+        "field": "memberType",
+        "value": "PRODUCER"
+      },
+      "type": "number"
+    },
+    {
+      "name": "DataAttivazione",
+      "required_if": {
+        "field": "memberType",
+        "value": "PRODUCER"
+      },
+      "type": "string"
+    }
   ],
   "enums": {
-    "TipologiaGiuridica": ["PF", "PG"],
-    "TipologiaSoggetto": ["AI", "PI", "AS"]
+    "TipologiaGiuridica": [
+      "PF",
+      "PG"
+    ],
+    "TipologiaSoggetto": [
+      "AI",
+      "PI",
+      "AS"
+    ],
+    "memberType": [
+      "CONSUMER",
+      "PRODUCER"
+    ]
   },
-  "templateVersion": "MVP-2026-02-17"
+  "templateVersion": "MVP-2026-02-26"
 }

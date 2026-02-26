@@ -12,20 +12,39 @@ const MemberCreateSchema = z.object({
   legalType: z.string().optional(),
   subjectType: z.string().optional(),
   podCode: z.string().optional(),
+  memberType: z.string().optional(),    // CONSUMER or PRODUCER
+  censimpCode: z.string().optional(),   // GAUDÌ CENSIMP code (producer)
+  plantPowerKW: z.number().optional(),  // Plant power kW (producer)
+  installedCapacityKW: z.number().optional(), // Installed capacity (producer)
+  hasStorage: z.boolean().optional(),   // Has battery storage (producer)
 });
 
 export async function memberRoutes(fastify: FastifyInstance) {
-    // Update member status
-    fastify.patch('/members/:id/status', {
-      preHandler: [apiKeyAuth],
-      handler: async (request, reply) => {
-        const { id } = request.params as { id: string };
-        const { status } = request.body as { status: string };
-        if (!status) return reply.code(400).send({ error: 'Missing status' });
-        const member = await prisma.member.update({ where: { id }, data: { status } });
-        reply.send(member);
-      },
-    });
+  // Update a single member field (for agent-driven onboarding)
+  fastify.patch('/members/:id/field', {
+    preHandler: [apiKeyAuth],
+    handler: async (request, reply) => {
+      const { id } = request.params as { id: string };
+      const { field, value } = request.body as { field: string; value: any };
+      if (!field) return reply.code(400).send({ error: 'Missing field' });
+      // Only allow updating known fields
+      const allowed = ['name', 'surname', 'fiscalCode', 'vatNumber', 'legalType', 'subjectType', 'podCode', 'status', 'memberType', 'censimpCode', 'plantPowerKW', 'installedCapacityKW', 'hasStorage'];
+      if (!allowed.includes(field)) return reply.code(400).send({ error: 'Invalid field' });
+      const member = await prisma.member.update({ where: { id }, data: { [field]: value } });
+      reply.send(member);
+    },
+  });
+  // Update member status
+  fastify.patch('/members/:id/status', {
+    preHandler: [apiKeyAuth],
+    handler: async (request, reply) => {
+      const { id } = request.params as { id: string };
+      const { status } = request.body as { status: string };
+      if (!status) return reply.code(400).send({ error: 'Missing status' });
+      const member = await prisma.member.update({ where: { id }, data: { status } });
+      reply.send(member);
+    },
+  });
   // Create member
   fastify.post('/members', {
     preHandler: [apiKeyAuth],
@@ -48,14 +67,14 @@ export async function memberRoutes(fastify: FastifyInstance) {
       const { query } = request.query as { query?: string };
       const where = query
         ? {
-            OR: [
-              { name: { contains: query, mode: 'insensitive' } as any },
-              { surname: { contains: query, mode: 'insensitive' } as any },
-              { fiscalCode: { contains: query, mode: 'insensitive' } as any },
-              { vatNumber: { contains: query, mode: 'insensitive' } as any },
-              { podCode: { contains: query, mode: 'insensitive' } as any },
-            ],
-          }
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } as any },
+            { surname: { contains: query, mode: 'insensitive' } as any },
+            { fiscalCode: { contains: query, mode: 'insensitive' } as any },
+            { vatNumber: { contains: query, mode: 'insensitive' } as any },
+            { podCode: { contains: query, mode: 'insensitive' } as any },
+          ],
+        }
         : undefined;
       const members = await prisma.member.findMany({ where, take: 50 });
       reply.send(members);

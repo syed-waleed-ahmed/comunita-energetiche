@@ -1,11 +1,14 @@
 import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import { validateTracciatoRow } from '../../../packages/core/src/validation';
+import { crossValidateMember } from '../../../packages/core/src/crossValidation';
+import { DOC_TYPES } from '../../../packages/core/src/docTypes';
 
 const prisma = new PrismaClient();
 
 export async function validationRoutes(fastify: FastifyInstance) {
   // POST /members/:id/validate
+  // Runs both row-level validation AND cross-document validation
   fastify.route({
     method: 'POST',
     url: '/members/:id/validate',
@@ -14,28 +17,61 @@ export async function validationRoutes(fastify: FastifyInstance) {
       const { id } = request.params as { id: string };
       const member = await prisma.member.findUnique({ where: { id } });
       if (!member) return reply.code(404).send({ error: 'Not found' });
-      // Build row for validation from member fields
+
+      // ── Step 1: Row-level validation (field formats, required, enum, etc.) ──
       const row = { ...member };
-      const issues = validateTracciatoRow(row);
-      // Store issues in DB
-      await prisma.validationIssue.deleteMany({ where: { memberId: id } });
-      await prisma.validationIssue.createMany({
-        data: issues.map(issue => ({
-          memberId: id,
-          severity: issue.severity,
-          code: issue.code,
-          message: issue.message,
-          field: issue.field,
-          source: issue.source,
-        })),
+      const rowIssues = validateTracciatoRow(row);
+
+      // ── Step 2: Cross-document validation (data consistency across documents) ──
+      // Fetch all extraction results for this member's documents
+      const documents = await prisma.document.findMany({
+        where: { memberId: id },
+        include: { extractionResults: true },
       });
-      reply.send({ issues });
+
+      // Build extraction map: docType → extracted fields
+      const extractions: Record<string, Record<string, any>> = {};
+      for (const doc of documents) {
+        if (doc.extractionResults.length > 0) {
+          // Use the most recent extraction result for each doc type
+          const latest = doc.extractionResults.sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )[0];
+          extractions[doc.docType] = latest.json as Record<string, any>;
+        }
+      }
+
+      const crossIssues = crossValidateMember({ member: member as any, extractions });
+
+      // ── Combine all issues ──
+      const allIssues = [...rowIssues, ...crossIssues];
+
+      // Store issues in DB (replace previous ones)
+      await prisma.validationIssue.deleteMany({ where: { memberId: id } });
+      if (allIssues.length > 0) {
+        await prisma.validationIssue.createMany({
+          data: allIssues.map(issue => ({
+            memberId: id,
+            severity: issue.severity,
+            code: issue.code,
+            message: issue.message,
+            field: issue.field,
+            source: issue.source,
+          })),
+        });
+      }
+
+      reply.send({
+        rowValidation: { issueCount: rowIssues.length, issues: rowIssues },
+        crossValidation: { issueCount: crossIssues.length, issues: crossIssues },
+        totalIssues: allIssues.length,
+      });
     },
     schema: {
-      body: { type: ['object', 'null'] }, // Accept empty or object body
+      body: { type: ['object', 'null'] },
     },
     config: {
-      rawBody: true, // Accept raw body
+      rawBody: true,
     },
   });
 }

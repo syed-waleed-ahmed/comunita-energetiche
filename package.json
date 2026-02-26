@@ -8,7 +8,13 @@
   ],
   "scripts": {
     "dev": "pnpm --filter @ce/apps-api dev",
-    "mastra": "pnpm --filter @ce/packages-mastra dev"
+    "studio": "cd packages/mastra && npx mastra dev --dir src/mastra",
+    "agent:chat": "npx tsx packages/mastra/src/cli.ts",
+    "test": "cd packages/core && npx jest --verbose",
+    "seed": "npx tsx scripts/seed.ts",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:generate": "npx prisma generate",
+    "prisma:studio": "npx prisma studio"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

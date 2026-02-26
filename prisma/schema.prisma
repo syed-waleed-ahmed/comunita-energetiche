@@ -15,13 +15,19 @@ model Member {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   status       String
+  memberType   String?  // CONSUMER or PRODUCER
   name         String?
   surname      String?
   fiscalCode   String?
   vatNumber    String?
-  legalType    String? // PF/PG
-  subjectType  String? // AI/PI/AS/…
+  legalType    String?  // PF (persona fisica) / PG (persona giuridica)
+  subjectType  String?  // AI/PI/AS/…
   podCode      String?
+  // Producer-specific fields (from GAUDÌ cert, connection record, nameplates)
+  censimpCode        String?  // CENSIMP code from GAUDÌ certificate
+  plantPowerKW       Float?   // Declared plant power (kW) from GAUDÌ
+  installedCapacityKW Float?  // Installed PV capacity (kW) from nameplates
+  hasStorage         Boolean? // Whether installation includes battery storage
   documents    Document[]
   validationIssues ValidationIssue[]
   tracciatoRows TracciatoRow[]

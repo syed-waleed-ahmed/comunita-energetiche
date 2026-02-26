@@ -1,21 +1,51 @@
+# ─── Dependencies ───
 node_modules/
+.pnpm-store/
+
+# ─── Build Outputs ───
 dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# ─── Environment & Secrets ───
 .env
-.env.*
-/uploads/
-/tracciato/
+.env.local
+.env.*.local
+!.env.example
+
+# ─── Database ───
 *.sqlite
-*.log
-.idea/
-.vscode/
-migrations/
-coverage/
+*.sqlite3
+/prisma/dev.db
+
+# ─── Mastra ───
+.mastra/
+
+# ─── Runtime / Uploads ───
+uploads/
+tracciato/
 *.csv
 *.xlsx
 *.xls
-/prisma/dev.db
-npm-debug.log
-pnpm-debug.log
+
+# ─── Logs ───
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# ─── Testing ───
+coverage/
+.jest/
+
+# ─── IDE & OS ───
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 .DS_Store
 Thumbs.db
-*.tsbuildinfo
+desktop.ini
