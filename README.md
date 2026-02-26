@@ -112,7 +112,7 @@ pnpm agent:chat
 
 ## 🤖 Mastra Agent
 
-The **OnboardingOpsAgent** is a real LLM-backed agent (OpenAI GPT-4o-mini) with 7 tools:
+The **OnboardingOpsAgent** is a real LLM-backed agent (OpenAI GPT-4o-mini) with 7 tools and **Persistent Memory** backed by PostgreSQL. The agent remembers conversation history across turns seamlessly.
 
 | Tool | What it does |
 |------|-------------|
@@ -168,5 +168,6 @@ pnpm test
 | Database | Prisma ORM (PostgreSQL) |
 | Validation | Zod schemas + JSON rule engine |
 | AI Agent | Mastra Framework + OpenAI GPT-4o-mini |
+| Memory | @mastra/memory + @mastra/pg |
 | Monorepo | pnpm workspaces |
 | Testing | Jest + ts-jest |

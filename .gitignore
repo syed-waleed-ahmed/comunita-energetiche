@@ -13,6 +13,7 @@ out/
 .env
 .env.local
 .env.*.local
+packages/mastra/.env
 !.env.example
 
 # ─── Database ───
