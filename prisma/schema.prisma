@@ -15,19 +15,54 @@ model Member {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   status       String
-  memberType   String?  // CONSUMER or PRODUCER
+  memberType   String?  // CONSUMER, PRODUCER, or PROSUMER
+
+  // ── Identity (Anagrafica) ──
   name         String?
   surname      String?
   fiscalCode   String?
   vatNumber    String?
   legalType    String?  // PF (persona fisica) / PG (persona giuridica)
   subjectType  String?  // AI/PI/AS/…
+
+  // ── Birth Data ──
+  placeOfBirth    String?
+  provinceOfBirth String?
+  countryOfBirth  String?
+  dateOfBirth     DateTime?
+  gender          String?   // M or F
+
+  // ── Address ──
+  address      String?
+  houseNumber  String?
+  city         String?
+  province     String?
+  postalCode   String?
+
+  // ── Contacts ──
+  phone        String?
+  mobile       String?
+  email        String?
+
+  // ── Professional & Financial ──
+  profession   String?
+  iban         String?
   podCode      String?
-  // Producer-specific fields (from GAUDÌ cert, connection record, nameplates)
+  referent     String?   // Referente Part Energy
+  conventions  Json?     // e.g. { "banca360": true, "otherAssoc": "XYZ" }
+
+  // ── Consent Tracking ──
+  consentPrivacy    Boolean @default(false)
+  consentStatute    Boolean @default(false)
+  consentRegulation Boolean @default(false)
+
+  // ── Producer-specific fields ──
   censimpCode        String?  // CENSIMP code from GAUDÌ certificate
   plantPowerKW       Float?   // Declared plant power (kW) from GAUDÌ
   installedCapacityKW Float?  // Installed PV capacity (kW) from nameplates
   hasStorage         Boolean? // Whether installation includes battery storage
+
+  // ── Relations ──
   documents    Document[]
   validationIssues ValidationIssue[]
   tracciatoRows TracciatoRow[]

@@ -1,9 +1,9 @@
 /**
  * OnboardingOpsAgent — Mastra-powered LLM Agent for Comunità Energetiche
  *
- * This is a real Mastra agent backed by an LLM (OpenAI GPT-4o-mini).
- * It uses 7 tools to interact with the backend API and can have
- * natural conversations about member onboarding.
+ * This is a real Mastra agent backed by OpenAI GPT-4o.
+ * It uses 9 modular tools and runs as a self-contained monolith
+ * with native database access and AI extraction.
  */
 
 import { Agent } from '@mastra/core/agent';
@@ -11,13 +11,15 @@ import { Memory } from '@mastra/memory';
 import { PostgresStore } from '@mastra/pg';
 import {
     memberSearchTool,
+    registerMemberTool,
     checklistTool,
     validateMemberTool,
     extractDocumentTool,
     listDocumentsTool,
     updateMemberFieldTool,
     generateTracciatoTool,
-} from '../../tools';
+    extractLocalFileTool,
+} from '../../tools/index';
 import { ONBOARDING_AGENT_SYSTEM_PROMPT } from '../../agentSystemPrompt';
 
 const pgMemory = new PostgresStore({
@@ -29,16 +31,18 @@ export const onboardingAgent = new Agent({
     id: 'onboarding-ops-agent',
     name: 'OnboardingOpsAgent',
     instructions: ONBOARDING_AGENT_SYSTEM_PROMPT,
-    model: 'openai/gpt-4o-mini',
+    model: 'openai/gpt-4o',
     // @ts-ignore — private field typing mismatch across monorepo workspaces
     memory: new Memory({ storage: pgMemory }),
     tools: {
         memberSearchTool,
+        registerMemberTool,
         checklistTool,
         validateMemberTool,
         extractDocumentTool,
         listDocumentsTool,
         updateMemberFieldTool,
         generateTracciatoTool,
+        extractLocalFileTool,
     },
 });

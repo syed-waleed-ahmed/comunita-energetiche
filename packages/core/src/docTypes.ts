@@ -23,6 +23,7 @@ export const DOC_TYPES = {
     BILL: 'BILL',
     VISURA: 'VISURA',
     PAYMENT: 'PAYMENT',
+    PAYMENT_RECEIPT: 'PAYMENT_RECEIPT',
 
     // ── Producer-only ──
     DILA: 'DILA',
@@ -88,6 +89,14 @@ export const DOC_TYPE_CATALOG: DocTypeInfo[] = [
         applicableTo: ['CONSUMER', 'PRODUCER'],
         required: false,
         acceptedMimeTypes: ['application/pdf', 'image/jpeg', 'image/png'],
+    },
+    {
+        code: DOC_TYPES.PAYMENT_RECEIPT,
+        displayName: 'Contabile Bonifico',
+        description: 'Bank transfer receipt for the €25 membership quota payment',
+        applicableTo: ['CONSUMER', 'PRODUCER'],
+        required: false,
+        acceptedMimeTypes: ['application/pdf', 'image/jpeg'],
     },
 
     // ── Producer-only documents ──

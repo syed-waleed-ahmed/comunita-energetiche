@@ -121,6 +121,11 @@ const SIMULATED_DATA: Partial<Record<DocType, { fields: Record<string, any>; con
 // DocumentExtractor class
 // ────────────────────────────────────────────────────────────
 
+import { generateObject } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import * as fs from 'fs';
+import * as path from 'path';
+
 export class DocumentExtractor {
   /**
    * Extract structured data from a document.
@@ -143,7 +148,35 @@ export class DocumentExtractor {
       };
     }
 
-    // Perform extraction (simulated for MVP, swap for real LLM call)
+    // Attempt real AI extraction if the API key is present
+    try {
+      if (process.env.OPENAI_API_KEY) {
+        console.log(`[DocumentExtractor] Running real OpenAI extraction on ${documentPath}`);
+        const realData = await this._performRealExtraction(documentPath, schema);
+
+        // Validate extracted fields against schema
+        const validation = schema.safeParse(realData);
+        const confidence = validation.success ? 0.95 : 0.60;
+
+        return {
+          docType,
+          fields: validation.success ? validation.data : realData,
+          confidence,
+          evidence: {
+            source: 'openai-gpt-4o',
+            schemaValid: validation.success,
+            errors: validation.success ? undefined : validation.error.issues,
+          },
+          needsReview: confidence < 0.9,
+          extractable: true,
+        };
+      }
+    } catch (error) {
+      console.warn(`[DocumentExtractor] Real AI extraction failed, falling back to simulation:`, error);
+    }
+
+    // Fallback to simulated extraction for MVP/testing if real AI fails or is unconfigured
+    console.log(`[DocumentExtractor] Running simulated extraction for ${docType}`);
     const simulated = await this._simulateExtraction(docType);
 
     // Validate extracted fields against schema
@@ -165,12 +198,39 @@ export class DocumentExtractor {
   }
 
   /**
-   * Simulated extraction for MVP.
-   *
-   * In production, replace this method with:
-   *   - GPT-4o Vision API call for image documents (nameplates)
-   *   - PDF parsing + LLM extraction for text PDFs (bolletta, visura)
-   *   - Excel parsing for spreadsheets (serial number list)
+   * Real extraction using OpenAI GPT-4o (supports native PDF and Image parsing)
+   */
+  private async _performRealExtraction(documentPath: string, schema: any): Promise<Record<string, any>> {
+    const buffer = fs.readFileSync(documentPath);
+    const ext = path.extname(documentPath).toLowerCase();
+
+    let mimeType = 'application/pdf';
+    if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
+    else if (ext === '.png') mimeType = 'image/png';
+    else if (ext === '.webp') mimeType = 'image/webp';
+
+    const result = await generateObject({
+      model: openai('gpt-4o'),
+      schema: schema,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: 'Sei un esperto nell\'estrazione di dati da documenti amministrativi e tecnici italiani (bollette, visure, documenti GSE, targhette di inverter e pannelli). Estrai i dati richiesti in modo accurato. Se un dato non è chiaramente leggibile o non è presente, omettilo o scrivi null.'
+            },
+            { type: 'file', mimeType, data: buffer } as any
+          ]
+        }
+      ]
+    });
+
+    return result.object as Record<string, any>;
+  }
+
+  /**
+   * Simulated extraction for MVP fallback testing.
    */
   private async _simulateExtraction(
     docType: DocType

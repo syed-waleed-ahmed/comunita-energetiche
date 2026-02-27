@@ -1,6 +1,6 @@
-# Comunità Energetiche AI Onboarding — Backend MVP
+# Comunità Energetiche AI Onboarding — Monolith Agent
 
-An AI-powered onboarding assistant for Italian Renewable Energy Communities (_Comunità Energetiche Rinnovabili_). Automates member registration, document collection, data extraction, cross-validation, and GSE Tracciato generation — with a Mastra LLM agent for natural-language interaction.
+An AI-powered onboarding assistant for Italian Renewable Energy Communities (_Comunità Energetiche Rinnovabili_). Automates member registration, document collection, data extraction (GPT-4o Vision), cross-validation, and GSE Tracciato generation — running as a **self-contained monolith** with direct database access.
 
 ---
 
@@ -9,41 +9,48 @@ An AI-powered onboarding assistant for Italian Renewable Energy Communities (_Co
 ```
 comunità-energetiche/
 │
-├── apps/api/                        # ── Fastify REST API ──
+├── apps/api/                        # ── Fastify REST API (legacy, optional) ──
 │   └── src/
-│       ├── index.ts                 # Server entrypoint & route registration
-│       ├── routes.members.ts        # Member CRUD + field updates
-│       ├── routes.documents.ts      # Document upload & listing
-│       ├── routes.checklist.ts      # Dynamic document checklist (consumer/producer)
-│       ├── routes.extractions.ts    # Data extraction from documents
-│       ├── routes.validation.ts     # Row-level + cross-document validation
-│       ├── routes.tracciato.ts      # GSE Tracciato CSV generation
-│       └── routes.agent.ts          # LLM Agent chat endpoint
+│       ├── index.ts                 # Server entrypoint
+│       ├── routes.members.ts        # Member CRUD
+│       ├── routes.documents.ts      # Document upload
+│       ├── routes.checklist.ts      # Document checklist
+│       ├── routes.extractions.ts    # Data extraction
+│       ├── routes.validation.ts     # Validation
+│       ├── routes.tracciato.ts      # GSE CSV generation
+│       └── routes.agent.ts          # Agent chat endpoint
 │
 ├── packages/core/                   # ── Core Business Logic ──
 │   └── src/
-│       ├── docTypes.ts              # 15 document type definitions
-│       ├── checklistConfig.ts       # Consumer / Producer checklists
-│       ├── extractionSchemas.ts     # Zod extraction schemas (8 doc types)
-│       ├── extractor.ts             # Schema-driven document extractor
+│       ├── docTypes.ts              # 16 document type definitions
+│       ├── checklistConfig.ts       # Consumer / Producer / Prosumer checklists
+│       ├── extractionSchemas.ts     # Zod extraction schemas
+│       ├── extractor.ts             # GPT-4o Vision document extractor
 │       ├── crossValidation.ts       # Cross-document consistency checks
 │       ├── validation.ts            # Field-level rule engine
 │       ├── tracciato.ts             # GSE CSV column definitions
-│       ├── validation.test.ts       # Test suite (22 tests)
 │       └── index.ts                 # Barrel exports
 │
-├── packages/mastra/                 # ── Mastra AI Agent ──
+├── packages/mastra/                 # ── Mastra AI Agent (Monolith) ──
 │   └── src/
-│       ├── mastra/                  # Mastra instance (for Studio)
-│       │   ├── index.ts             # Mastra({ agents }) registration
+│       ├── lib/
+│       │   ├── prisma.ts            # Shared PrismaClient singleton
+│       │   └── extractor.ts         # Shared DocumentExtractor singleton
+│       ├── tools/
+│       │   ├── index.ts             # Barrel export (9 tools)
+│       │   ├── memberTools.ts       # Search + Register + Update
+│       │   ├── documentTools.ts     # Extract + List + Upload
+│       │   ├── validationTools.ts   # Checklist + Validate
+│       │   └── tracciatoTools.ts    # GSE CSV generation
+│       ├── mastra/
+│       │   ├── index.ts             # Mastra instance registration
 │       │   └── agents/
-│       │       └── OnboardingOpsAgent.ts  # Agent definition (GPT-4o-mini)
-│       ├── tools.ts                 # 7 agent tools (createTool)
-│       ├── agentSystemPrompt.ts     # System prompt (consumer/producer aware)
+│       │       └── OnboardingOpsAgent.ts  # Agent (GPT-4o + 9 tools)
+│       ├── agentSystemPrompt.ts     # System prompt (full registration aware)
 │       └── cli.ts                   # Interactive CLI chat
 │
 ├── prisma/
-│   ├── schema.prisma                # Database schema (Member, Document, etc.)
+│   ├── schema.prisma                # Database schema (Member with 30+ fields)
 │   └── rules.json                   # Validation rules configuration
 │
 ├── scripts/
@@ -76,61 +83,49 @@ cp .env.example .env
 pnpm prisma:migrate
 pnpm seed
 
-# 4. Start the API server
-pnpm dev                    # → http://localhost:3000
-
-# 5. Open Mastra Studio (new terminal)
+# 4. Start Mastra Studio (the only thing you need!)
 pnpm studio                 # → http://localhost:4111
-
-# 6. Or chat via CLI (new terminal)
-pnpm agent:chat
 ```
 
----
-
-## 📡 API Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/health` | Health check |
-| `POST` | `/members` | Create member (consumer or producer) |
-| `GET` | `/members` | Search members by name/CF/POD/VAT |
-| `GET` | `/members/:id` | Get member detail |
-| `PATCH` | `/members/:id/field` | Update a single member field |
-| `POST` | `/documents` | Upload a document (multipart) |
-| `GET` | `/members/:id/documents` | List documents for a member |
-| `GET` | `/members/:id/checklist` | Dynamic document checklist |
-| `POST` | `/extractions/run` | Extract data from a document |
-| `GET` | `/extractions/schemas` | List available extraction schemas |
-| `POST` | `/members/:id/validate` | Run validation (row + cross-doc) |
-| `POST` | `/tracciato/batches` | Create tracciato batch |
-| `POST` | `/tracciato/batches/:id/generate` | Generate GSE CSV |
-| `POST` | `/agent/chat` | Chat with the LLM agent |
-| `DELETE` | `/agent/chat/:sessionId` | Clear agent session |
+> **Note:** You do NOT need to run `pnpm dev` (the Fastify API). The Mastra agent runs as a self-contained monolith with direct database and AI access.
 
 ---
 
-## 🤖 Mastra Agent
+## 🤖 Mastra Agent — Monolith Architecture
 
-The **OnboardingOpsAgent** is a real LLM-backed agent (OpenAI GPT-4o-mini) with 7 tools and **Persistent Memory** backed by PostgreSQL. The agent remembers conversation history across turns seamlessly.
+The **OnboardingOpsAgent** is a GPT-4o agent with **9 modular tools**, **PostgreSQL-backed persistent memory**, and **native database access** — no HTTP API layer needed.
 
-| Tool | What it does |
-|------|-------------|
-| `member-search` | Find members by name, fiscal code, POD, or VAT |
-| `checklist-check` | Check document requirements for a member |
-| `validate-member` | Run validation (row-level + cross-document) |
-| `extract-document` | Extract structured data from a document |
-| `list-documents` | List all documents for a member |
-| `update-member-field` | Update member profile fields |
-| `generate-tracciato` | Generate GSE Tracciato CSV batch |
+| Tool | Module | What it does |
+|------|--------|-------------|
+| `register-member` | `memberTools` | Register a new member with all registration fields |
+| `member-search` | `memberTools` | Find members by name, email, CF, POD, or VAT |
+| `update-member-field` | `memberTools` | Update any member field (with whitelist) |
+| `checklist-check` | `validationTools` | Check document requirements for a member |
+| `validate-member` | `validationTools` | Run row-level + cross-document validation |
+| `extract-document` | `documentTools` | Extract structured data from a document |
+| `extract-local-file` | `documentTools` | Process drag-and-drop file uploads via GPT-4o Vision |
+| `list-documents` | `documentTools` | List all documents for a member |
+| `generate-tracciato` | `tracciatoTools` | Generate GSE Tracciato CSV batch |
 
-### Three ways to use the agent:
+### Registration Form Coverage
+
+The agent covers **100% of the fields** from the [live registration form](https://comunitaenergetica.eu/registrazione-soci/):
+
+- ✅ Identity (name, surname, fiscal code, gender)
+- ✅ Birth data (place, province, country, date)
+- ✅ Address (street, house number, city, province, CAP)
+- ✅ Contacts (phone, mobile, email)
+- ✅ Financial (IBAN, profession)
+- ✅ Member type (Consumer / Producer / Prosumer)
+- ✅ Document uploads (ID, bills, payment receipt)
+- ✅ Consent tracking (privacy, statute, regulation)
+
+### How to use the agent:
 
 | Method | Command | URL |
 |--------|---------|-----|
 | **Mastra Studio** (web UI) | `pnpm studio` | http://localhost:4111 |
 | **CLI Chat** | `pnpm agent:chat` | Terminal |
-| **REST API** | `POST /agent/chat` | http://localhost:3000/agent/chat |
 
 ---
 
@@ -148,8 +143,8 @@ pnpm test
 
 | Script | Description |
 |--------|-------------|
-| `pnpm dev` | Start the Fastify API server (port 3000) |
-| `pnpm studio` | Start Mastra Studio web UI (port 4111) |
+| `pnpm studio` | **Start Mastra Studio** (main entry point, port 4111) |
+| `pnpm dev` | Start the legacy Fastify API (port 3000, optional) |
 | `pnpm agent:chat` | Interactive CLI chat with the agent |
 | `pnpm test` | Run the test suite |
 | `pnpm seed` | Seed the database with test data |
@@ -164,10 +159,10 @@ pnpm test
 | Layer | Technology |
 |-------|-----------|
 | Runtime | Node.js + TypeScript |
-| API | Fastify |
-| Database | Prisma ORM (PostgreSQL) |
+| AI Agent | Mastra Framework + OpenAI GPT-4o |
+| Database | Prisma ORM (PostgreSQL / Supabase) |
+| AI Extraction | OpenAI GPT-4o Vision (native PDF + image) |
 | Validation | Zod schemas + JSON rule engine |
-| AI Agent | Mastra Framework + OpenAI GPT-4o-mini |
-| Memory | @mastra/memory + @mastra/pg |
+| Memory | @mastra/memory + @mastra/pg (persistent) |
 | Monorepo | pnpm workspaces |
 | Testing | Jest + ts-jest |

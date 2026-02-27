@@ -1,7 +1,21 @@
 import { z } from 'zod';
+import fs from 'fs';
+import path from 'path';
 
-// Load rules from JSON config
-const rules = require('../../../prisma/rules.json');
+// Robust directory traversal to find rules.json since Vite shifts cwd/dirname
+let rulesPath = '';
+let currentDir = process.cwd();
+while (currentDir !== path.parse(currentDir).root) {
+  const checkPath = path.join(currentDir, 'prisma', 'rules.json');
+  if (fs.existsSync(checkPath)) {
+    rulesPath = checkPath;
+    break;
+  }
+  currentDir = path.dirname(currentDir);
+}
+if (!rulesPath) throw new Error('Could not strictly locate prisma/rules.json from ' + process.cwd());
+
+const rules = JSON.parse(fs.readFileSync(rulesPath, 'utf8'));
 
 export interface ValidationIssue {
   code: string;
