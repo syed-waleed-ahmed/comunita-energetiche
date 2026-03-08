@@ -50,3 +50,8 @@ coverage/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ─── Misc ───
+*.tgz
+.turbo/
+.cache/
