@@ -50,10 +50,13 @@ export function validateTracciatoRow(row: Record<string, any>): ValidationIssue[
     // Required if (conditional requirement)
     if (fieldRule.required_if) {
       const cond = fieldRule.required_if;
-      if (row[cond.field] === cond.value && (value === undefined || value === null || value === '')) {
+      const condMatches = Array.isArray(cond.value)
+        ? cond.value.includes(row[cond.field])
+        : row[cond.field] === cond.value;
+      if (condMatches && (value === undefined || value === null || value === '')) {
         issues.push({
           code: 'REQUIRED_IF',
-          message: `${fieldRule.name} is required if ${cond.field} == ${cond.value}`,
+          message: `${fieldRule.name} is required if ${cond.field} == ${Array.isArray(cond.value) ? cond.value.join('|') : cond.value}`,
           field: fieldRule.name,
           severity: 'ERROR',
           source: 'RULE_ENGINE',
@@ -118,7 +121,7 @@ export function validateTracciatoRow(row: Record<string, any>): ValidationIssue[
   if (!row['CodiceFiscale']) issues.push({ code: 'REQUIRED', message: 'CodiceFiscale required', field: 'CodiceFiscale', severity: 'ERROR', source: 'RULE_ENGINE' });
 
   // ── Producer-specific rules ──
-  if (row['memberType'] === 'PRODUCER') {
+  if (row['memberType'] === 'PRODUCER' || row['memberType'] === 'PROSUMER') {
     // GAUDÌ code required for producers
     if (!row['CodiceGAUDI'] && !row['censimpCode']) {
       issues.push({

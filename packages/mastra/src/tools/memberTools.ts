@@ -76,6 +76,19 @@ export const registerMemberTool = createTool({
         consentPrivacy: z.boolean().optional().default(false),
         consentStatute: z.boolean().optional().default(false),
         consentRegulation: z.boolean().optional().default(false),
+        // Producer-specific
+        censimpCode: z.string().optional().describe('CENSIMP code from GAUDÌ certificate'),
+        plantPowerKW: z.number().optional().describe('Declared plant power in kW'),
+        installedCapacityKW: z.number().optional().describe('Installed PV capacity in kW'),
+        hasStorage: z.boolean().optional().describe('Whether installation includes battery storage'),
+        dataAttivazione: z.string().optional().describe('Plant activation date (DD/MM/YYYY)'),
+        // Company / GSE fields
+        formaGiuridica: z.string().optional().describe('Legal form (SRL, SPA, etc.)'),
+        codiceAteco: z.string().optional().describe('ATECO code (format: XX.XX.XX)'),
+        ragioneSociale: z.string().optional().describe('Company name / business name'),
+        accumuloStandalone: z.string().optional().describe('Standalone battery storage (SI/NO)'),
+        sottoTipologiaAmministrazioneLocale: z.string().optional().describe('Sub-type local admin per ISTAT'),
+        studioAssociatoSocietaProfessionisti: z.string().optional().describe('Associated professional studio'),
     }),
     outputSchema: z.any(),
     execute: async (inputData: any) => {
@@ -118,6 +131,17 @@ export const registerMemberTool = createTool({
                 consentPrivacy: inputData.consentPrivacy || false,
                 consentStatute: inputData.consentStatute || false,
                 consentRegulation: inputData.consentRegulation || false,
+                censimpCode: inputData.censimpCode,
+                plantPowerKW: inputData.plantPowerKW,
+                installedCapacityKW: inputData.installedCapacityKW,
+                hasStorage: inputData.hasStorage,
+                dataAttivazione: inputData.dataAttivazione,
+                formaGiuridica: inputData.formaGiuridica,
+                codiceAteco: inputData.codiceAteco,
+                ragioneSociale: inputData.ragioneSociale,
+                accumuloStandalone: inputData.accumuloStandalone,
+                sottoTipologiaAmministrazioneLocale: inputData.sottoTipologiaAmministrazioneLocale,
+                studioAssociatoSocietaProfessionisti: inputData.studioAssociatoSocietaProfessionisti,
             },
         });
 
@@ -136,6 +160,9 @@ const ALLOWED_FIELDS = [
     'phone', 'mobile', 'email', 'profession', 'iban', 'referent',
     'consentPrivacy', 'consentStatute', 'consentRegulation',
     'censimpCode', 'plantPowerKW', 'installedCapacityKW', 'hasStorage',
+    'dataAttivazione', 'formaGiuridica', 'codiceAteco', 'ragioneSociale',
+    'accumuloStandalone', 'sottoTipologiaAmministrazioneLocale',
+    'studioAssociatoSocietaProfessionisti',
 ];
 
 export const updateMemberFieldTool = createTool({

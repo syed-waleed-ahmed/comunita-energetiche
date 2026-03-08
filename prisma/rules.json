@@ -103,7 +103,7 @@
       "name": "CodiceGAUDI",
       "required_if": {
         "field": "memberType",
-        "value": "PRODUCER"
+        "value": ["PRODUCER", "PROSUMER"]
       },
       "type": "string"
     },
@@ -111,7 +111,7 @@
       "name": "PotenzaImpianto",
       "required_if": {
         "field": "memberType",
-        "value": "PRODUCER"
+        "value": ["PRODUCER", "PROSUMER"]
       },
       "type": "number"
     },
@@ -119,7 +119,7 @@
       "name": "DataAttivazione",
       "required_if": {
         "field": "memberType",
-        "value": "PRODUCER"
+        "value": ["PRODUCER", "PROSUMER"]
       },
       "type": "string"
     }
@@ -136,7 +136,8 @@
     ],
     "memberType": [
       "CONSUMER",
-      "PRODUCER"
+      "PRODUCER",
+      "PROSUMER"
     ]
   },
   "templateVersion": "MVP-2026-02-26"

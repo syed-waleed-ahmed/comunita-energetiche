@@ -4,7 +4,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
-import { DocType, buildChecklist, checkChecklistComplete, validateTracciatoRow, crossValidateMember } from '@ce/packages-core';
+import { DocType, buildChecklist, checkChecklistComplete, validateTracciatoRow, crossValidateMember, memberToTracciatoRow } from '@ce/packages-core';
 
 // ────────────────────────────────────────────────────────────
 // Tool: Check Document Checklist
@@ -58,8 +58,9 @@ export const validateMemberTool = createTool({
         });
         if (!member) throw new Error('Member not found');
 
-        // Step 1: Row validation
-        const rowValidation = validateTracciatoRow({ ...member });
+        // Step 1: Row validation (map English member fields → Italian GSE names)
+        const tracciatoRow = memberToTracciatoRow(member as any);
+        const rowValidation = validateTracciatoRow(tracciatoRow);
 
         // Step 2: Cross-document validation
         const extractions: Record<string, Record<string, any>> = {};

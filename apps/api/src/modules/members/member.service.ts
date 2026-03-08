@@ -5,31 +5,88 @@ import { prisma } from '@ce/db';
 import { z } from 'zod';
 
 export const MemberCreateSchema = z.object({
+  // Identity
   name: z.string().optional(),
   surname: z.string().optional(),
   fiscalCode: z.string().optional(),
   vatNumber: z.string().optional(),
   legalType: z.string().optional(),
   subjectType: z.string().optional(),
-  podCode: z.string().optional(),
   memberType: z.string().optional(),
+
+  // Birth
+  placeOfBirth: z.string().optional(),
+  provinceOfBirth: z.string().optional(),
+  countryOfBirth: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  gender: z.string().optional(),
+
+  // Address
+  address: z.string().optional(),
+  houseNumber: z.string().optional(),
+  city: z.string().optional(),
+  province: z.string().optional(),
+  postalCode: z.string().optional(),
+
+  // Contacts
+  phone: z.string().optional(),
+  mobile: z.string().optional(),
+  email: z.string().optional(),
+
+  // Professional & Financial
+  profession: z.string().optional(),
+  iban: z.string().optional(),
+  podCode: z.string().optional(),
+  referent: z.string().optional(),
+  conventions: z.any().optional(),
+
+  // Consents
+  consentPrivacy: z.boolean().optional(),
+  consentStatute: z.boolean().optional(),
+  consentRegulation: z.boolean().optional(),
+
+  // Producer-specific
   censimpCode: z.string().optional(),
   plantPowerKW: z.number().optional(),
   installedCapacityKW: z.number().optional(),
   hasStorage: z.boolean().optional(),
+  dataAttivazione: z.string().optional(),
+
+  // GSE / Company
+  formaGiuridica: z.string().optional(),
+  codiceAteco: z.string().optional(),
+  ragioneSociale: z.string().optional(),
+  accumuloStandalone: z.string().optional(),
+  sottoTipologiaAmministrazioneLocale: z.string().optional(),
+  studioAssociatoSocietaProfessionisti: z.string().optional(),
 });
 
 export type MemberCreateInput = z.infer<typeof MemberCreateSchema>;
 
 const ALLOWED_UPDATE_FIELDS = [
   'name', 'surname', 'fiscalCode', 'vatNumber', 'legalType', 'subjectType',
-  'podCode', 'status', 'memberType', 'censimpCode', 'plantPowerKW',
-  'installedCapacityKW', 'hasStorage',
+  'podCode', 'status', 'memberType',
+  'placeOfBirth', 'provinceOfBirth', 'countryOfBirth', 'dateOfBirth', 'gender',
+  'address', 'houseNumber', 'city', 'province', 'postalCode',
+  'phone', 'mobile', 'email', 'profession', 'iban', 'referent',
+  'consentPrivacy', 'consentStatute', 'consentRegulation',
+  'censimpCode', 'plantPowerKW', 'installedCapacityKW', 'hasStorage',
+  'dataAttivazione', 'formaGiuridica', 'codiceAteco', 'ragioneSociale',
+  'accumuloStandalone', 'sottoTipologiaAmministrazioneLocale',
+  'studioAssociatoSocietaProfessionisti',
 ] as const;
 
 export class MemberService {
   async create(data: MemberCreateInput) {
-    return prisma.member.create({ data: { ...data, status: 'DRAFT' } });
+    const { dateOfBirth, ...rest } = data;
+    let parsedDate: Date | undefined;
+    if (dateOfBirth) {
+      const parts = dateOfBirth.split('/');
+      if (parts.length === 3) {
+        parsedDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+      }
+    }
+    return prisma.member.create({ data: { ...rest, dateOfBirth: parsedDate, status: 'DRAFT' } });
   }
 
   async search(query?: string) {

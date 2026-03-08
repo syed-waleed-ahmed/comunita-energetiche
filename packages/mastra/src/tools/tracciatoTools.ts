@@ -4,7 +4,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
-import { generateTracciatoCSV, TRACCIATO_COLUMNS } from '@ce/packages-core';
+import { generateTracciatoCSV, memberToTracciatoRow } from '@ce/packages-core';
 import fs from 'fs';
 import path from 'path';
 
@@ -28,8 +28,7 @@ export const generateTracciatoTool = createTool({
         });
 
         for (const member of members) {
-            const dataJson: any = {};
-            for (const col of TRACCIATO_COLUMNS) dataJson[col] = (member as any)[col] || '';
+            const dataJson = memberToTracciatoRow(member as any);
             await prisma.tracciatoRow.create({
                 data: {
                     batchId: batch.id,

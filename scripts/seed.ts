@@ -79,6 +79,11 @@ async function main() {
         plantPowerKW: 6.0,
         installedCapacityKW: 5.5,
         hasStorage: true,
+        dataAttivazione: '15/03/2023',
+        ragioneSociale: 'Energia Verde SRL',
+        formaGiuridica: 'SRL',
+        codiceAteco: '35.11.00',
+        accumuloStandalone: 'NO',
         status: 'DRAFT',
       },
     });

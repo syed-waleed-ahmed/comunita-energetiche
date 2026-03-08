@@ -2,7 +2,7 @@
  * Validation Service — Business logic for member validation
  */
 import { prisma } from '@ce/db';
-import { validateTracciatoRow, crossValidateMember } from '@ce/packages-core';
+import { validateTracciatoRow, crossValidateMember, memberToTracciatoRow } from '@ce/packages-core';
 
 export class ValidationService {
   async validateMember(memberId: string) {
@@ -11,8 +11,9 @@ export class ValidationService {
       throw Object.assign(new Error('Member not found'), { statusCode: 404 });
     }
 
-    // Step 1: Row-level validation
-    const rowIssues = validateTracciatoRow({ ...member });
+    // Step 1: Row-level validation (map English member fields → Italian GSE names)
+    const tracciatoRow = memberToTracciatoRow(member as any);
+    const rowIssues = validateTracciatoRow(tracciatoRow);
 
     // Step 2: Cross-document validation
     const documents = await prisma.document.findMany({
