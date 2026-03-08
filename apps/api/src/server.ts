@@ -4,7 +4,8 @@
  * Starts the Fastify server. Import `buildApp` separately for testing.
  */
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 // env must be imported AFTER dotenv.config()
 import { env } from './config/env';
