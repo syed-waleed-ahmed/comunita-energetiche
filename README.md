@@ -115,28 +115,32 @@ comunita-energetiche/
 │           └── agent/               # AI agent chat (routes)
 │
 ├── packages/db/                     # Shared singleton PrismaClient
+│
 ├── packages/core/                   # Core business logic
 │   └── src/
 │       ├── docTypes.ts              # 16 document type definitions
 │       ├── checklistConfig.ts       # Consumer / Producer checklists
-│       ├── extractionSchemas.ts     # Zod extraction schemas
-│       ├── extractor.ts            # GPT-4o Vision document extractor
+│       ├── extractionSchemas.ts     # Zod extraction schemas (8 doc types)
+│       ├── extractor.ts             # GPT-4o Vision document extractor
 │       ├── crossValidation.ts       # Cross-document consistency checks
 │       ├── validation.ts            # Field-level rule engine
-│       └── tracciato.ts             # GSE CSV column definitions
+│       ├── tracciato.ts             # GSE CSV columns + English→Italian mapping
+│       └── validation.test.ts       # 22 tests
 │
 ├── packages/mastra/                 # Mastra AI Agent
 │   └── src/
-│       ├── tools/                   # 9 agent tools
+│       ├── tools/                   # 9 agent tools (member, doc, validation, tracciato)
 │       ├── mastra/agents/           # OnboardingOpsAgent definition
 │       ├── agentSystemPrompt.ts     # Agent system prompt
+│       ├── agents.ts                # Agent exports
 │       └── cli.ts                   # Interactive CLI chat
 │
 ├── prisma/
 │   ├── schema.prisma                # 8-model database schema
-│   └── rules.json                   # Validation rules config
+│   ├── rules.json                   # Validation rules config (field rules + enums)
+│   └── migrations/                  # Migration history
 │
-├── scripts/seed.ts                  # Database seed script
+├── scripts/seed.ts                  # Database seed script (consumer + producer)
 ├── .env.example                     # Environment variable template
 ├── pnpm-workspace.yaml              # Workspace configuration
 └── tsconfig.json                    # Root TypeScript config
@@ -168,8 +172,8 @@ cp .env.example .env
 
 # 4. Set up database
 pnpm prisma:generate
-pnpm prisma:migrate
-pnpm seed
+npx prisma db push          # Sync schema to your database
+pnpm seed                   # Optional: seed with test data
 
 # 5. Start development
 pnpm dev                    # Fastify API → http://localhost:3000
@@ -215,6 +219,7 @@ All scripts are run from the monorepo root:
 | `pnpm agent:chat` | Interactive CLI chat with the AI agent |
 | `pnpm test` | Run test suite (22 tests) |
 | `pnpm seed` | Seed database with test data |
+| `npx prisma db push` | Sync Prisma schema to database (recommended) |
 | `pnpm prisma:migrate` | Run Prisma database migrations |
 | `pnpm prisma:generate` | Regenerate Prisma client |
 | `pnpm prisma:studio` | Open Prisma Studio (database browser) |
