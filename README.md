@@ -137,8 +137,7 @@ comunita-energetiche/
 │
 ├── prisma/
 │   ├── schema.prisma                # 8-model database schema
-│   ├── rules.json                   # Validation rules config (field rules + enums)
-│   └── migrations/                  # Migration history
+│   └── rules.json                   # Validation rules config (field rules + enums)
 │
 ├── scripts/seed.ts                  # Database seed script (consumer + producer)
 ├── .env.example                     # Environment variable template
@@ -220,7 +219,6 @@ All scripts are run from the monorepo root:
 | `pnpm test` | Run test suite (22 tests) |
 | `pnpm seed` | Seed database with test data |
 | `npx prisma db push` | Sync Prisma schema to database (recommended) |
-| `pnpm prisma:migrate` | Run Prisma database migrations |
 | `pnpm prisma:generate` | Regenerate Prisma client |
 | `pnpm prisma:studio` | Open Prisma Studio (database browser) |
 

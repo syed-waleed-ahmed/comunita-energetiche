@@ -14,7 +14,6 @@
     "agent:chat": "npx tsx packages/mastra/src/cli.ts",
     "test": "cd packages/core && npx jest --verbose",
     "seed": "npx tsx scripts/seed.ts",
-    "prisma:migrate": "npx prisma migrate dev",
     "prisma:generate": "npx prisma generate",
     "prisma:studio": "npx prisma studio"
   },
