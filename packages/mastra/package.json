@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./src/mastra/index.ts",
+    "./agents": "./src/agents.ts"
+  },
   "scripts": {
     "studio": "npx mastra dev --dir src/mastra",
     "chat": "npx tsx src/cli.ts",
@@ -11,6 +15,7 @@
   "dependencies": {
     "@ai-sdk/google": "^3.0.33",
     "@ai-sdk/openai": "^3.0.36",
+    "@ce/db": "workspace:*",
     "@ce/packages-core": "workspace:*",
     "@mastra/core": "^1.8.0",
     "@prisma/client": "^5.22.0",

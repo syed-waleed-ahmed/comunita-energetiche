@@ -5,7 +5,7 @@ import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { extractor } from '../lib/extractor';
-import { DocType } from '../../../core/src/docTypes';
+import { DocType } from '@ce/packages-core';
 import path from 'path';
 
 // ────────────────────────────────────────────────────────────

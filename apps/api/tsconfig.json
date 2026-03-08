@@ -5,7 +5,9 @@
     "outDir": "dist",
     "baseUrl": "./",
     "paths": {
-      "@ce/packages-core": "../../packages/core/src"
+      "@ce/db": ["../../packages/db/src"],
+      "@ce/packages-core": ["../../packages/core/src"],
+      "@ce/packages-mastra/*": ["../../packages/mastra/src/*"]
     }
   },
   "include": ["src"]

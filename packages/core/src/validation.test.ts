@@ -90,17 +90,17 @@ describe('validateTracciatoRow', () => {
 // ═══════════════════════════════════════════════════════════
 
 describe('checklistConfig', () => {
-  it('should return 4 document types for consumers', () => {
+  it('should return 5 document types for consumers', () => {
     const docs = getRequiredDocs('CONSUMER');
-    expect(docs.length).toBe(4); // ID, BILL, VISURA, PAYMENT
+    expect(docs.length).toBe(5); // ID, BILL, VISURA, PAYMENT, PAYMENT_RECEIPT
     expect(docs.some(d => d.code === 'ID')).toBe(true);
     expect(docs.some(d => d.code === 'BILL')).toBe(true);
     expect(docs.some(d => d.code === 'VISURA')).toBe(true);
   });
 
-  it('should return 15 document types for producers', () => {
+  it('should return 16 document types for producers', () => {
     const docs = getRequiredDocs('PRODUCER');
-    expect(docs.length).toBe(15); // all consumer docs + 11 producer-only
+    expect(docs.length).toBe(16); // all consumer docs + 11 producer-only
     expect(docs.some(d => d.code === 'DILA')).toBe(true);
     expect(docs.some(d => d.code === 'GAUDI_CERT')).toBe(true);
     expect(docs.some(d => d.code === 'NAMEPLATE_INVERTER')).toBe(true);
@@ -109,7 +109,7 @@ describe('checklistConfig', () => {
 
   it('should build a checklist with received status', () => {
     const checklist = buildChecklist('CONSUMER', ['ID', 'BILL']);
-    expect(checklist.length).toBe(4);
+    expect(checklist.length).toBe(5);
     const idItem = checklist.find(c => c.docType === 'ID');
     expect(idItem?.received).toBe(true);
     const visuraItem = checklist.find(c => c.docType === 'VISURA');

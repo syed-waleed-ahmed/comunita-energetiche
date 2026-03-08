@@ -4,7 +4,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
-import { generateTracciatoCSV, TRACCIATO_COLUMNS } from '../../../core/src/tracciato';
+import { generateTracciatoCSV, TRACCIATO_COLUMNS } from '@ce/packages-core';
 import fs from 'fs';
 import path from 'path';
 

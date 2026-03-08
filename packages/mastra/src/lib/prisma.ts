@@ -1,7 +1,5 @@
 /**
  * Shared Prisma Client Singleton
- * Single database connection reused across all Mastra tools.
+ * Reuses the centralized @ce/db package.
  */
-import { PrismaClient } from '@prisma/client';
-
-export const prisma = new PrismaClient();
+export { prisma } from '@ce/db';

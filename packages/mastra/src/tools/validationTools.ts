@@ -4,10 +4,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
-import { DocType } from '../../../core/src/docTypes';
-import { buildChecklist, checkChecklistComplete } from '../../../core/src/checklistConfig';
-import { validateTracciatoRow } from '../../../core/src/validation';
-import { crossValidateMember } from '../../../core/src/crossValidation';
+import { DocType, buildChecklist, checkChecklistComplete, validateTracciatoRow, crossValidateMember } from '@ce/packages-core';
 
 // ────────────────────────────────────────────────────────────
 // Tool: Check Document Checklist
