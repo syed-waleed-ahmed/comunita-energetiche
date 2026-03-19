@@ -159,7 +159,7 @@ comunita-energetiche/
 
 ```bash
 # 1. Clone the repository
-git clone <repository-url>
+git clone https://github.com/syed-waleed-ahmed/comunita-energetiche.git
 cd comunita-energetiche
 
 # 2. Install dependencies
