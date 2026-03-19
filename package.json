@@ -9,7 +9,7 @@
     "dev": "pnpm --filter @ce/packages-mastra studio",
     "build": "pnpm -r build",
     "agent:chat": "npx tsx packages/mastra/src/cli.ts",
-    "test": "cd packages/core && npx jest --verbose",
+    "test": "pnpm -r test",
     "seed": "npx tsx scripts/seed.ts",
     "prisma:generate": "npx prisma generate",
     "prisma:studio": "npx prisma studio"

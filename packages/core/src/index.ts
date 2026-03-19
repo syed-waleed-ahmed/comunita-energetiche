@@ -6,3 +6,5 @@ export * from './crossValidation';
 export * from './extractionSchemas';
 export * from './extractor';
 export * from './tracciato';
+export * from './logger';
+export * from './rateLimiter';

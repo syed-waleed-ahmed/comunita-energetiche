@@ -15,6 +15,10 @@
 
 import { DocType, DOC_TYPES } from './docTypes';
 import { getExtractionSchema, getExtractableDocTypes } from './extractionSchemas';
+import { createLogger } from './logger';
+import { openaiRateLimiter } from './rateLimiter';
+
+const logger = createLogger('DocumentExtractor');
 
 // ────────────────────────────────────────────────────────────
 // Types
@@ -151,7 +155,7 @@ export class DocumentExtractor {
     // Attempt real AI extraction if the API key is present
     try {
       if (process.env.OPENAI_API_KEY) {
-        console.log(`[DocumentExtractor] Running real OpenAI extraction on ${documentPath}`);
+        logger.info('Running real OpenAI extraction', { documentPath });
         const realData = await this._performRealExtraction(documentPath, schema);
 
         // Validate extracted fields against schema
@@ -172,11 +176,11 @@ export class DocumentExtractor {
         };
       }
     } catch (error) {
-      console.warn(`[DocumentExtractor] Real AI extraction failed, falling back to simulation:`, error);
+      logger.warn('Real AI extraction failed, falling back to simulation', { documentPath: arguments[0] }, error as Error);
     }
 
     // Fallback to simulated extraction for MVP/testing if real AI fails or is unconfigured
-    console.log(`[DocumentExtractor] Running simulated extraction for ${docType}`);
+    logger.info('Running simulated extraction', { docType });
     const simulated = await this._simulateExtraction(docType);
 
     // Validate extracted fields against schema
@@ -211,6 +215,9 @@ export class DocumentExtractor {
     const filePart = isImage
       ? { type: 'image' as const, image: buffer }
       : { type: 'file' as const, mediaType: 'application/pdf' as const, data: buffer };
+
+    // Throttle to stay within OpenAI rate limits
+    await openaiRateLimiter.acquire();
 
     const result = await generateObject({
       model: openai('gpt-4o'),

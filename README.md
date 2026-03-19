@@ -78,7 +78,7 @@ The project uses a **Mastra-first architecture** — all functionality is access
 | **Validation** | Zod schemas + JSON rule engine |
 | **Agent Memory** | @mastra/memory + @mastra/pg (persistent, per-session) |
 | **Monorepo** | pnpm workspaces |
-| **Testing** | Jest + ts-jest (22 tests) |
+| **Testing** | Jest + ts-jest (36 tests) |
 
 ---
 
@@ -184,7 +184,7 @@ All scripts are run from the monorepo root:
 | `pnpm dev` | Start Mastra Studio agent UI (http://localhost:4111) |
 | `pnpm build` | Build all packages |
 | `pnpm agent:chat` | Interactive CLI chat with the AI agent |
-| `pnpm test` | Run test suite (22 tests) |
+| `pnpm test` | Run test suite (36 tests across core + mastra) |
 | `pnpm seed` | Seed database with test data |
 | `npx prisma db push` | Sync Prisma schema to database |
 | `pnpm prisma:generate` | Regenerate Prisma client |
@@ -223,13 +223,20 @@ The **OnboardingOpsAgent** is a GPT-4o conversational agent powered by the [Mast
 pnpm test
 ```
 
-Runs **22 tests** across 5 categories:
+Runs **36 tests** across 2 packages:
 
+**Core** (22 tests):
 - Row-level field validation
 - Checklist configuration
 - Cross-document consistency checks
 - Extraction schema validation
 - Document extractor logic
+
+**Mastra Tools** (14 tests):
+- Member search, registration, field updates
+- Document extraction and listing
+- Checklist and validation pipeline
+- Tracciato CSV batch generation
 
 ---
 
