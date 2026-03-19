@@ -4,35 +4,22 @@
 
 An AI-powered onboarding platform for Italian Renewable Energy Communities (_Comunita Energetiche Rinnovabili_, CER). Automates the full member lifecycle: registration, document collection, intelligent data extraction via GPT-4o Vision, multi-layer validation, and GSE Tracciato CSV generation.
 
-Built as a **pnpm monorepo** with a domain-driven modular architecture, ready for MVP production deployment.
+Built as a **pnpm monorepo** with a domain-driven modular architecture. The entire platform runs through the **Mastra AI Agent** — a conversational interface powered by GPT-4o with 9 specialized tools.
 
 ---
 
 ## Table of Contents
 
-- [Comunita Energetiche — AI Onboarding Platform](#comunita-energetiche--ai-onboarding-platform)
-  - [Table of Contents](#table-of-contents)
-  - [Features](#features)
-  - [Architecture](#architecture)
-  - [Tech Stack](#tech-stack)
-  - [Project Structure](#project-structure)
-  - [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
-  - [Environment Variables](#environment-variables)
-  - [Available Scripts](#available-scripts)
-  - [API Endpoints](#api-endpoints)
-    - [Members](#members)
-    - [Documents](#documents)
-    - [Checklist](#checklist)
-    - [Extractions](#extractions)
-    - [Validation](#validation)
-    - [Tracciato (GSE CSV)](#tracciato-gse-csv)
-    - [Agent](#agent)
-  - [AI Agent](#ai-agent)
-    - [Usage](#usage)
-  - [Testing](#testing)
-  - [License](#license)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Available Scripts](#available-scripts)
+- [AI Agent](#ai-agent)
+- [Testing](#testing)
+- [License](#license)
 
 ---
 
@@ -50,28 +37,32 @@ Built as a **pnpm monorepo** with a domain-driven modular architecture, ready fo
 
 ## Architecture
 
-The project follows a **domain-driven modular architecture** inside a pnpm monorepo:
+The project uses a **Mastra-first architecture** — all functionality is accessed through the AI agent's tools, which call shared business logic packages directly:
 
 ```
-                     ┌─────────────────────┐
-                     │   apps/api           │   Fastify REST API
-                     │  (modules, routes,   │   Zod-validated env
-                     │   services, middleware)│  Auth + Error handling
-                     └────────┬────────────┘
+                     ┌──────────────────────┐
+                     │   Mastra Studio       │   Web UI (localhost:4111)
+                     │   or CLI Chat         │   Interactive agent chat
+                     └────────┬─────────────┘
+                              │
+                     ┌────────▼─────────────┐
+                     │  packages/mastra      │   AI Agent + 9 Tools
+                     │  OnboardingOpsAgent   │   GPT-4o powered
+                     └────────┬─────────────┘
                               │
               ┌───────────────┼───────────────┐
-              │               │               │
-     ┌────────▼──────┐ ┌─────▼──────┐ ┌──────▼───────┐
-     │  packages/core │ │ packages/db│ │packages/mastra│
-     │  Business logic│ │ Prisma     │ │ AI Agent +   │
-     │  Validation    │ │ Singleton  │ │ 9 Tools      │
-     │  Extraction    │ │ Client     │ │ CLI + Studio │
-     └───────────────┘ └────────────┘ └──────────────┘
-                              │
-                     ┌────────▼────────┐
-                     │   PostgreSQL     │
-                     │   (Supabase)     │
-                     └─────────────────┘
+              │                               │
+     ┌────────▼──────┐              ┌────────▼──────┐
+     │  packages/core │              │  packages/db  │
+     │  Business logic│              │  Prisma       │
+     │  Validation    │              │  Singleton    │
+     │  Extraction    │              │  Client       │
+     └───────────────┘              └───────┬──────┘
+                                            │
+                                   ┌────────▼────────┐
+                                   │   PostgreSQL     │
+                                   │   (Supabase)     │
+                                   └─────────────────┘
 ```
 
 ---
@@ -79,13 +70,12 @@ The project follows a **domain-driven modular architecture** inside a pnpm monor
 ## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+| --- | --- |
 | **Runtime** | Node.js + TypeScript (ES2020) |
-| **API Framework** | Fastify 4 |
 | **AI Agent** | Mastra Framework 1.8+ / OpenAI GPT-4o |
 | **AI Extraction** | GPT-4o Vision (native PDF + image support) |
 | **Database** | PostgreSQL via Prisma ORM |
-| **Validation** | Zod 4 schemas + JSON rule engine |
+| **Validation** | Zod schemas + JSON rule engine |
 | **Agent Memory** | @mastra/memory + @mastra/pg (persistent, per-session) |
 | **Monorepo** | pnpm workspaces |
 | **Testing** | Jest + ts-jest (22 tests) |
@@ -96,25 +86,6 @@ The project follows a **domain-driven modular architecture** inside a pnpm monor
 
 ```
 comunita-energetiche/
-│
-├── apps/api/                        # Fastify REST API
-│   └── src/
-│       ├── server.ts                # Production entry point
-│       ├── app.ts                   # Fastify factory (testable)
-│       ├── config/env.ts            # Zod-validated environment config
-│       ├── middleware/
-│       │   ├── auth.ts              # API key authentication hook
-│       │   └── errorHandler.ts      # Global error handler
-│       └── modules/
-│           ├── members/             # Member CRUD (routes + service)
-│           ├── documents/           # Document upload (routes + service)
-│           ├── checklist/           # Document checklist (routes)
-│           ├── extractions/         # AI data extraction (routes + service)
-│           ├── validation/          # Validation engine (routes + service)
-│           ├── tracciato/           # GSE CSV generation (routes + service)
-│           └── agent/               # AI agent chat (routes)
-│
-├── packages/db/                     # Shared singleton PrismaClient
 │
 ├── packages/core/                   # Core business logic
 │   └── src/
@@ -127,7 +98,9 @@ comunita-energetiche/
 │       ├── tracciato.ts             # GSE CSV columns + English→Italian mapping
 │       └── validation.test.ts       # 22 tests
 │
-├── packages/mastra/                 # Mastra AI Agent
+├── packages/db/                     # Shared singleton PrismaClient
+│
+├── packages/mastra/                 # Mastra AI Agent (main entry point)
 │   └── src/
 │       ├── tools/                   # 9 agent tools (member, doc, validation, tracciato)
 │       ├── mastra/agents/           # OnboardingOpsAgent definition
@@ -175,9 +148,9 @@ npx prisma db push          # Sync schema to your database
 pnpm seed                   # Optional: seed with test data
 
 # 5. Start development
-pnpm dev                    # Fastify API → http://localhost:3000
+pnpm dev                    # Mastra Studio → http://localhost:4111
 # OR
-pnpm studio                 # Mastra Studio → http://localhost:4111
+pnpm agent:chat             # Interactive CLI chat in terminal
 ```
 
 ---
@@ -187,14 +160,11 @@ pnpm studio                 # Mastra Studio → http://localhost:4111
 Copy `.env.example` to `.env` and configure:
 
 | Variable | Required | Description |
-|----------|----------|-------------|
+| --- | --- | --- |
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `API_KEY` | Yes | API key for authenticating REST requests (`x-api-key` header) |
 | `OPENAI_API_KEY` | Yes* | OpenAI API key (for GPT-4o extraction + agent) |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | No | Google AI key (alternative LLM provider) |
 | `NODE_ENV` | No | `development` / `production` (default: `development`) |
-| `PORT` | No | API server port (default: `3000`) |
-| `HOST` | No | API server host (default: `0.0.0.0`) |
 | `CSV_DELIMITER` | No | CSV delimiter for Tracciato (default: `;`) |
 | `UPLOAD_DIR` | No | File upload directory (default: `uploads`) |
 | `TRACCIATO_DIR` | No | Tracciato output directory (default: `tracciato`) |
@@ -210,67 +180,15 @@ Copy `.env.example` to `.env` and configure:
 All scripts are run from the monorepo root:
 
 | Script | Description |
-|--------|-------------|
-| `pnpm dev` | Start Fastify API in dev mode (port 3000) |
+| --- | --- |
+| `pnpm dev` | Start Mastra Studio agent UI (http://localhost:4111) |
 | `pnpm build` | Build all packages |
-| `pnpm start` | Start production server |
-| `pnpm studio` | Start Mastra Studio agent UI (port 4111) |
 | `pnpm agent:chat` | Interactive CLI chat with the AI agent |
 | `pnpm test` | Run test suite (22 tests) |
 | `pnpm seed` | Seed database with test data |
-| `npx prisma db push` | Sync Prisma schema to database (recommended) |
+| `npx prisma db push` | Sync Prisma schema to database |
 | `pnpm prisma:generate` | Regenerate Prisma client |
 | `pnpm prisma:studio` | Open Prisma Studio (database browser) |
-
----
-
-## API Endpoints
-
-All endpoints require the `x-api-key` header (except `GET /` and `GET /health`).
-
-### Members
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/members` | Create a new member |
-| `GET` | `/members` | Search members (query params) |
-| `GET` | `/members/:id` | Get member by ID |
-| `PATCH` | `/members/:id/status` | Update member status |
-| `PATCH` | `/members/:id/field` | Update a specific member field |
-
-### Documents
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/documents` | Upload a document |
-| `GET` | `/members/:id/documents` | List documents for a member |
-
-### Checklist
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/members/:id/checklist` | Get document checklist status |
-
-### Extractions
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/extractions/run` | Run AI data extraction on a document |
-| `GET` | `/extractions/schemas` | List available extraction schemas |
-
-### Validation
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/members/:id/validate` | Run full validation (row + cross-doc) |
-
-### Tracciato (GSE CSV)
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/tracciato/batches` | Create a new Tracciato batch |
-| `POST` | `/tracciato/batches/:id/generate` | Generate CSV for a batch |
-| `GET` | `/tracciato/batches/:id/download` | Download generated CSV |
-
-### Agent
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/agent/chat` | Send a message to the AI agent |
-| `DELETE` | `/agent/chat/:sessionId` | Clear agent chat session |
 
 ---
 
@@ -279,7 +197,7 @@ All endpoints require the `x-api-key` header (except `GET /` and `GET /health`).
 The **OnboardingOpsAgent** is a GPT-4o conversational agent powered by the [Mastra Framework](https://mastra.ai) with persistent memory and 9 tools:
 
 | Tool | Category | Description |
-|------|----------|-------------|
+| --- | --- | --- |
 | `register-member` | Members | Register a new CER member |
 | `member-search` | Members | Search by name, email, fiscal code, POD, or VAT |
 | `update-member-field` | Members | Update any whitelisted member field |
@@ -293,10 +211,9 @@ The **OnboardingOpsAgent** is a GPT-4o conversational agent powered by the [Mast
 ### Usage
 
 | Method | Command | Access |
-|--------|---------|--------|
-| Mastra Studio (Web UI) | `pnpm studio` | http://localhost:4111 |
+| --- | --- | --- |
+| Mastra Studio (Web UI) | `pnpm dev` | http://localhost:4111 |
 | CLI Chat | `pnpm agent:chat` | Terminal |
-| REST API | `POST /agent/chat` | HTTP |
 
 ---
 

@@ -3,14 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "workspaces": [
-    "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "dev": "pnpm --filter @ce/apps-api dev",
+    "dev": "pnpm --filter @ce/packages-mastra studio",
     "build": "pnpm -r build",
-    "start": "pnpm --filter @ce/apps-api start",
-    "studio": "pnpm --filter @ce/packages-mastra studio",
     "agent:chat": "npx tsx packages/mastra/src/cli.ts",
     "test": "cd packages/core && npx jest --verbose",
     "seed": "npx tsx scripts/seed.ts",
