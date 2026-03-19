@@ -203,11 +203,14 @@ export class DocumentExtractor {
   private async _performRealExtraction(documentPath: string, schema: any): Promise<Record<string, any>> {
     const buffer = fs.readFileSync(documentPath);
     const ext = path.extname(documentPath).toLowerCase();
+    const isImage = ['.jpg', '.jpeg', '.png', '.webp'].includes(ext);
 
-    let mimeType = 'application/pdf';
-    if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
-    else if (ext === '.png') mimeType = 'image/png';
-    else if (ext === '.webp') mimeType = 'image/webp';
+    // Build the file/image content part based on the document type.
+    // Images use the dedicated 'image' type for better GPT-4o vision support;
+    // PDFs use 'file' with the correct 'mediaType' property (Vercel AI SDK v6+).
+    const filePart = isImage
+      ? { type: 'image' as const, image: buffer }
+      : { type: 'file' as const, mediaType: 'application/pdf' as const, data: buffer };
 
     const result = await generateObject({
       model: openai('gpt-4o'),
@@ -220,7 +223,7 @@ export class DocumentExtractor {
               type: 'text',
               text: 'Sei un esperto nell\'estrazione di dati da documenti amministrativi e tecnici italiani (bollette, visure, documenti GSE, targhette di inverter e pannelli). Estrai i dati richiesti in modo accurato. Se un dato non è chiaramente leggibile o non è presente, omettilo o scrivi null.'
             },
-            { type: 'file', mimeType, data: buffer } as any
+            filePart,
           ]
         }
       ]
